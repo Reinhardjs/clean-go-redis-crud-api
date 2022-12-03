@@ -12,15 +12,15 @@ type Post struct {
 	Description string `json:"description"`
 }
 
-func GetPosts() (error, []*Post) {
+func GetPosts() ([]*Post, error) {
 
 	DB := configs.GetDB()
 
 	posts := make([]*Post, 0)
 	err := DB.Table("posts").Find(&posts).Error
 	if err != nil {
-		return err, nil
+		return nil, err
 	}
 
-	return nil, posts
+	return posts, nil
 }
