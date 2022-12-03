@@ -205,6 +205,7 @@ func UpdatePost() http.Handler {
 func DeletePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		redisClient := configs.GetRedis()
 		defer cancel()
 
 		params := mux.Vars(r)
@@ -216,10 +217,27 @@ func DeletePost() http.Handler {
 
 		rw.Header().Add("Content-Type", "application/json")
 
+		// Check for existing record
+		_, existingPostErr := models.GetPost(uint(id))
+		if existingPostErr != nil {
+			if errors.Is(existingPostErr, gorm.ErrRecordNotFound) {
+				return utils.NewHTTPError(existingPostErr, 404, "record not found")
+			} else {
+				return existingPostErr
+			}
+		}
+
 		post, err := models.Delete(id)
 
 		if err != nil {
 			return err
+		}
+
+		// Delete JSON blob from Redis
+		_, redisDeleteErr := redisClient.Do("DEL", "post:"+strconv.Itoa(id))
+
+		if redisDeleteErr != nil {
+			return utils.NewHTTPError(err, 500, "Failed deleting data from redis")
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
