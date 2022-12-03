@@ -1,0 +1,13 @@
+package usecases
+
+import (
+	"dot-crud-redis-go-api/models"
+)
+
+type PostUsecase interface {
+	Create(post *models.Post) (*models.Post, error)
+	ReadAll() (*[]models.Post, error)
+	ReadById(id int) (*models.Post, error)
+	Update(id int, post *models.Post) (*models.Post, error)
+	Delete(id int) error
+}
