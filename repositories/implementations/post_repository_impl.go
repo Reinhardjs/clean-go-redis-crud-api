@@ -17,50 +17,53 @@ func CreatePostRepo(DB *gorm.DB) repositories.PostRepo {
 }
 
 func (e *PostRepoImpl) Create(post *models.Post) (*models.Post, error) {
-	err := e.DB.Save(&post).Error
-	if err != nil {
-		fmt.Printf("[PostRepoImpl.Create] error execute query %v \n", err)
-		return nil, fmt.Errorf("failed insert data")
+	result := e.DB.Model(&models.Post{}).Create(post)
+
+	if result.Error != nil {
+		return &models.Post{}, fmt.Errorf("DB error : %v", result.Error)
 	}
+
 	return post, nil
 }
 
 func (e *PostRepoImpl) ReadAll() (*[]models.Post, error) {
-	var posts []models.Post
-	err := e.DB.Find(&posts).Error
+	posts := make([]models.Post, 0)
+	err := e.DB.Table("posts").Find(&posts).Error
 	if err != nil {
-		fmt.Printf("[PostRepoImpl.ReadAll] error execute query %v \n", err)
-		return nil, fmt.Errorf("failed view all data")
+		return nil, fmt.Errorf("DB error : %v", err)
 	}
+
 	return &posts, nil
 }
 
 func (e *PostRepoImpl) ReadById(id int) (*models.Post, error) {
-	var post = models.Post{}
-	err := e.DB.Table("post").Where("id = ?", id).First(&post).Error
+	post := &models.Post{}
+	err := e.DB.Table("posts").Where("id = ?", id).First(post).Error
+
+	fmt.Println(*post)
+
 	if err != nil {
-		fmt.Printf("[PostRepoImpl.ReadById] error execute query %v \n", err)
-		return nil, fmt.Errorf("id is not exsis")
+		return nil, err
 	}
-	return &post, nil
+
+	return post, nil
 }
 
 func (e *PostRepoImpl) Update(id int, post *models.Post) (*models.Post, error) {
-	var upPost = models.Post{}
-	err := e.DB.Table("post").Where("id = ?", id).First(&upPost).Update(&post).Error
-	if err != nil {
-		fmt.Printf("[PostRepoImpl.Update] error execute query %v \n", err)
-		return nil, fmt.Errorf("failed update data")
+	updatedPost := &models.Post{}
+	result := e.DB.Model(updatedPost).Where("id = ?", post.ID).Updates(models.Post{Title: post.Title, Description: post.Description})
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("DB error : %v", result.Error)
 	}
-	return &upPost, nil
+
+	return updatedPost, nil
 }
 
-func (e *PostRepoImpl) Delete(id int) error {
-	var post = models.Post{}
-	err := e.DB.Table("post").Where("id = ?", id).First(&post).Delete(&post).Error
-	if err != nil {
-		fmt.Printf("[PostRepoImpl.Delete] error execute query %v \n", err)
-		return fmt.Errorf("id is not exsis")
-	}
-	return nil
+func (e *PostRepoImpl) Delete(id int) (map[string]interface{}, error) {
+	result := e.DB.Delete(&models.Post{}, id)
+
+	return map[string]interface{}{
+		"rows_affected": result.RowsAffected,
+	}, nil
 }
