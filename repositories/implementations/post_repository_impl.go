@@ -44,7 +44,7 @@ func (e *PostRepoImpl) ReadById(id int) (*models.Post, error) {
 	post := &models.Post{}
 
 	// Get JSON blob from Redis
-	redisResult, err := e.RedisClient.Do("GET", "post:"+strconv.Itoa(post.ID))
+	redisResult, err := e.RedisClient.Do("GET", "post:"+strconv.Itoa(id))
 
 	if err != nil {
 		// Failed getting data from redis
@@ -52,13 +52,20 @@ func (e *PostRepoImpl) ReadById(id int) (*models.Post, error) {
 	}
 
 	if redisResult == nil {
+
+		errorRead := e.DB.Table("posts").Where("id = ?", id).First(post).Error
+
+		if errorRead != nil {
+			return nil, errorRead
+		}
+
 		postJSON, err := json.Marshal(post)
 		if err != nil {
 			return nil, err
 		}
 
 		// Save JSON blob to Redis
-		_, saveRedisError := e.RedisClient.Do("SET", "post:"+strconv.Itoa(post.ID), postJSON)
+		_, saveRedisError := e.RedisClient.Do("SET", "post:"+strconv.Itoa(id), postJSON)
 
 		if saveRedisError != nil {
 			// Failed saving data to redis
@@ -66,12 +73,6 @@ func (e *PostRepoImpl) ReadById(id int) (*models.Post, error) {
 		}
 	} else {
 		json.Unmarshal(redisResult.([]byte), &post)
-	}
-
-	errorRead := e.DB.Table("posts").Where("id = ?", id).First(post).Error
-
-	if errorRead != nil {
-		return nil, errorRead
 	}
 
 	return post, nil
