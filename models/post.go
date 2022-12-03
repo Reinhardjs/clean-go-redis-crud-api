@@ -14,7 +14,6 @@ type Post struct {
 }
 
 func GetPosts() ([]*Post, error) {
-
 	DB := configs.GetDB()
 
 	posts := make([]*Post, 0)
@@ -24,4 +23,17 @@ func GetPosts() ([]*Post, error) {
 	}
 
 	return posts, nil
+}
+
+func GetPost(id uint) (*Post, error) {
+	DB := configs.GetDB()
+
+	post := &Post{}
+	err := DB.Table("posts").Where("id = ?", id).First(post).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("DB error : %v", err)
+	}
+
+	return post, nil
 }
