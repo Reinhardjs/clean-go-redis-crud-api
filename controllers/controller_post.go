@@ -4,6 +4,7 @@ import (
 	"context"
 	"dot-crud-redis-go-api/models"
 	"dot-crud-redis-go-api/responses"
+	"dot-crud-redis-go-api/utils"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -52,7 +53,7 @@ func GetPost() http.Handler {
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return NewHTTPError(err, 404, "record not found")
+				return utils.NewHTTPError(err, 404, "record not found")
 			} else {
 				return err
 			}
@@ -76,11 +77,11 @@ func CreatePost() http.Handler {
 		decodeError := json.NewDecoder(r.Body).Decode(post)
 
 		if decodeError != nil {
-			return NewHTTPError(nil, 400, "Invalid request body format")
+			return utils.NewHTTPError(nil, 400, "Invalid request body format")
 		}
 
 		if message, ok := post.Validate(); !ok {
-			return NewHTTPError(nil, 400, message)
+			return utils.NewHTTPError(nil, 400, message)
 		}
 
 		result, err := post.Create()

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"dot-crud-redis-go-api/utils"
 	"log"
 	"net/http"
 )
@@ -14,7 +15,7 @@ func (fn RootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("An error accured: %v", err)
 
-	clientError, ok := err.(ClientError)
+	clientError, ok := err.(utils.ClientError)
 	if !ok {
 		// the error is not ClientError
 		w.WriteHeader(500) // return 500 Internal Server Error.
