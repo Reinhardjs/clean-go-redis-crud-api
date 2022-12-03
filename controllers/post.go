@@ -127,7 +127,11 @@ func UpdatePost() http.Handler {
 		result, err := post.Update()
 
 		if err != nil {
-			return err
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return utils.NewHTTPError(err, 404, "record not found")
+			} else {
+				return err
+			}
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: result}
@@ -154,11 +158,7 @@ func DeletePost() http.Handler {
 		post, err := models.Delete(id)
 
 		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return utils.NewHTTPError(err, 404, "record not found")
-			} else {
-				return err
-			}
+			return err
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
