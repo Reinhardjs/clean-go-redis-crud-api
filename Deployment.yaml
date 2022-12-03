@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment                        # Type of Kubernetes resource
 metadata:
-  name: dot-crud-redis-go-api           # Name of the Kubernetes resource
+  name: clean-go-redis-crud-api           # Name of the Kubernetes resource
 spec:
   replicas: 1                           # Number of replicas
   selector:
     matchLabels:
-      app: dot-crud-redis-go-api        # This deployment applies to any Pods matching the specified label
+      app: clean-go-redis-crud-api        # This deployment applies to any Pods matching the specified label
   template:                             # This deployment will create a set of pods using the configurations in this template
     metadata:
       labels:                           # The labels that will be applied to all of the pods in this deployment
-        app: dot-crud-redis-go-api 
+        app: clean-go-redis-crud-api 
     spec:                               # Spec for the container which will run in the Pod
       containers:
-      - name: dot-crud-redis-go-api
-        image: dot-crud-redis-go-api:latest
+      - name: clean-go-redis-crud-api
+        image: clean-go-redis-crud-api:latest
         imagePullPolicy: Never
         ports:
           - containerPort: 8080
