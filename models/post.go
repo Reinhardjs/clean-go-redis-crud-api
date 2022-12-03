@@ -2,15 +2,17 @@ package models
 
 import (
 	"dot-crud-redis-go-api/configs"
+	"dot-crud-redis-go-api/responses"
 	"fmt"
-
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Post struct {
-	gorm.Model
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	ID          int       `gorm:"primary_key;auto_increment" json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 func (post *Post) Validate() (string, bool) {
@@ -44,6 +46,8 @@ func GetPost(id uint) (*Post, error) {
 	post := &Post{}
 	err := DB.Table("posts").Where("id = ?", id).First(post).Error
 
+	fmt.Println(*post)
+
 	if err != nil {
 		return nil, err
 	}
@@ -54,11 +58,39 @@ func GetPost(id uint) (*Post, error) {
 func (post *Post) Create() (interface{}, error) {
 	DB := configs.GetDB()
 
-	result := DB.Create(post)
+	result := DB.Model(&Post{}).Create(post)
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("DB error : %v", result.Error)
 	}
 
-	return result.Value, nil
+	createPostResponse := &responses.CreatePostResponse{
+		ID:          post.ID,
+		Title:       post.Title,
+		Description: post.Description,
+		UpdatedAt:   post.UpdatedAt,
+		CreatedAt:   post.CreatedAt,
+	}
+
+	return createPostResponse, nil
+}
+
+func (post *Post) Update() (interface{}, error) {
+	DB := configs.GetDB()
+
+	updatedPost := &Post{}
+	result := DB.Model(updatedPost).Where("id = ?", post.ID).Updates(Post{Title: post.Title, Description: post.Description})
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("DB error : %v", result.Error)
+	}
+
+	udpatePostResponse := &responses.UpdatePostResponse{
+		ID:          post.ID,
+		Title:       updatedPost.Title,
+		Description: updatedPost.Description,
+		UpdatedAt:   updatedPost.UpdatedAt,
+	}
+
+	return udpatePostResponse, nil
 }
