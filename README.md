@@ -104,3 +104,8 @@ Example Response Payload:
 
 ### Delete post
 `DELETE` http://103.134.154.18:30033/posts/{post-id}
+
+<br>
+
+Demo on youtube :
+https://youtu.be/p-QQj4LtuD8
