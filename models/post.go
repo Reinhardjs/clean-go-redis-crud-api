@@ -32,7 +32,7 @@ func GetPost(id uint) (*Post, error) {
 	err := DB.Table("posts").Where("id = ?", id).First(post).Error
 
 	if err != nil {
-		return nil, fmt.Errorf("DB error : %v", err)
+		return nil, err
 	}
 
 	return post, nil

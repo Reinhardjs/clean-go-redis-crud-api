@@ -5,11 +5,13 @@ import (
 	"dot-crud-redis-go-api/models"
 	"dot-crud-redis-go-api/responses"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 func GetPosts() http.Handler {
@@ -49,7 +51,11 @@ func GetPost() http.Handler {
 		post, err := models.GetPost(uint(id))
 
 		if err != nil {
-			return err
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return NewHTTPError(err, 404, "record not found")
+			} else {
+				return err
+			}
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
