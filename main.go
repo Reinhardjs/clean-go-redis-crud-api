@@ -1,23 +1,32 @@
 package main
 
 import (
+	"dot-crud-redis-go-api/configs"
 	"dot-crud-redis-go-api/controllers"
 	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
+
+	repositories "dot-crud-redis-go-api/repositories/implementations"
+	usecases "dot-crud-redis-go-api/usecases/implementations"
 )
 
 func main() {
 
 	router := mux.NewRouter()
+	DB := configs.GetDB()
 
-	router.Handle("/posts", controllers.GetPosts()).Methods("GET")
-	router.Handle("/posts/{id}", controllers.GetPost()).Methods("GET")
-	router.Handle("/posts", controllers.CreatePost()).Methods("POST")
-	router.Handle("/posts/{postId}", controllers.UpdatePost()).Methods("PUT")
-	router.Handle("/posts/{postId}", controllers.UpdatePost()).Methods("PATCH")
-	router.Handle("/posts/{postId}", controllers.DeletePost()).Methods("DELETE")
+	postRepository := repositories.CreatePostRepo(DB)
+	postUsecase := usecases.CreatePostUsecase(postRepository)
+	postController := controllers.CreatePostController(postUsecase)
+
+	router.Handle("/posts", postController.GetPosts()).Methods("GET")
+	router.Handle("/posts/{id}", postController.GetPost()).Methods("GET")
+	router.Handle("/posts", postController.CreatePost()).Methods("POST")
+	router.Handle("/posts/{postId}", postController.UpdatePost()).Methods("PUT")
+	router.Handle("/posts/{postId}", postController.UpdatePost()).Methods("PATCH")
+	router.Handle("/posts/{postId}", postController.DeletePost()).Methods("DELETE")
 
 	fmt.Println("starting web server at http://localhost:8080")
 	http.ListenAndServe(":8080", router)
