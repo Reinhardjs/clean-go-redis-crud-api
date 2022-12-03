@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"dot-crud-redis-go-api/configs"
 	"dot-crud-redis-go-api/models"
 	"dot-crud-redis-go-api/responses"
 	"dot-crud-redis-go-api/utils"
@@ -69,7 +70,10 @@ func GetPost() http.Handler {
 func CreatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		redisClient := configs.GetRedis()
+
 		defer cancel()
+		defer redisClient.Close()
 
 		rw.Header().Add("Content-Type", "application/json")
 
@@ -88,6 +92,18 @@ func CreatePost() http.Handler {
 
 		if err != nil {
 			return err
+		}
+
+		postJSON, err := json.Marshal(result)
+		if err != nil {
+			return err
+		}
+
+		// Save JSON blob to Redis
+		reply, err := redisClient.Do("SET", "post:"+strconv.Itoa(result.ID), postJSON)
+
+		if reply != "OK" {
+			return utils.NewHTTPError(nil, 500, "Failed saving data to redis")
 		}
 
 		response := responses.FineResponse{Status: http.StatusCreated, Message: "success", Data: result}

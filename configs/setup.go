@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/garyburd/redigo/redis"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
 )
 
 var db *gorm.DB
+var redisClient redis.Conn
 
 func init() {
 
@@ -33,8 +35,20 @@ func init() {
 	}
 
 	db = conn
+
+	// Init redis connection
+	redisConnection, err := redis.Dial("tcp", os.Getenv("redis_host")+":6379")
+	redisClient = redisConnection
+
+	if err != nil {
+		fmt.Print(err)
+	}
 }
 
 func GetDB() *gorm.DB {
 	return db
+}
+
+func GetRedis() redis.Conn {
+	return redisClient
 }

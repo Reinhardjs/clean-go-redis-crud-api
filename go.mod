@@ -9,6 +9,7 @@ require (
 )
 
 require (
+	github.com/garyburd/redigo v1.6.4 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/lib/pq v1.1.1 // indirect
 )

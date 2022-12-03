@@ -55,13 +55,13 @@ func GetPost(id uint) (*Post, error) {
 	return post, nil
 }
 
-func (post *Post) Create() (interface{}, error) {
+func (post *Post) Create() (*responses.CreatePostResponse, error) {
 	DB := configs.GetDB()
 
 	result := DB.Model(&Post{}).Create(post)
 
 	if result.Error != nil {
-		return nil, fmt.Errorf("DB error : %v", result.Error)
+		return &responses.CreatePostResponse{}, fmt.Errorf("DB error : %v", result.Error)
 	}
 
 	createPostResponse := &responses.CreatePostResponse{
