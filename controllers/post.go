@@ -39,6 +39,8 @@ func GetPosts() http.Handler {
 func GetPost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		redisClient := configs.GetRedis()
+
 		defer cancel()
 
 		params := mux.Vars(r)
@@ -58,6 +60,29 @@ func GetPost() http.Handler {
 			} else {
 				return err
 			}
+		}
+
+		// Get JSON blob from Redis
+		redisResult, err := redisClient.Do("GET", "post:"+strconv.Itoa(post.ID))
+
+		if err != nil {
+			return utils.NewHTTPError(err, 500, "Failed getting data from redis")
+		}
+
+		if redisResult == nil {
+			postJSON, err := json.Marshal(post)
+			if err != nil {
+				return err
+			}
+
+			// Save JSON blob to Redis
+			_, saveRedisError := redisClient.Do("SET", "post:"+strconv.Itoa(post.ID), postJSON)
+
+			if saveRedisError != nil {
+				return utils.NewHTTPError(saveRedisError, 500, "Failed saving data to redis")
+			}
+		} else {
+			json.Unmarshal(redisResult.([]byte), &post)
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
