@@ -11,6 +11,7 @@ This project is configured to be able to containerized using docker (Dockerfile)
 Here is what i mean by single-node cluster, go checkout my story on medium here: <br>
 https://reinhardjsilalahi.medium.com/beginners-guide-simple-hello-kubernetes-all-in-one-on-a-single-vps-fcfdfee9edfc
 
+<br> 
 
 ### Create Post
 `POST` http://103.134.154.18:30033/posts
