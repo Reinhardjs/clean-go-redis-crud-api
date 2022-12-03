@@ -13,7 +13,7 @@ type GetAllPostSuite struct {
 }
 
 func TestGetAllPostSuite(t *testing.T) {
-	suite.Run(t, new(GetSinglePostSuite))
+	suite.Run(t, new(GetAllPostSuite))
 }
 
 func (s *GetSinglePostSuite) TestGetAllPostThatDoesExist() {
