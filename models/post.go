@@ -94,3 +94,13 @@ func (post *Post) Update() (interface{}, error) {
 
 	return udpatePostResponse, nil
 }
+
+func Delete(postId int) (interface{}, error) {
+	DB := configs.GetDB()
+
+	result := DB.Delete(&Post{}, postId)
+
+	return &responses.DeletePostRespones{
+		RowsAffected: result.RowsAffected,
+	}, nil
+}

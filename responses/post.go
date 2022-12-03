@@ -18,3 +18,7 @@ type UpdatePostResponse struct {
 	Description string    `json:"description"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type DeletePostRespones struct {
+	RowsAffected int64 `json:"rows_affected"`
+}
