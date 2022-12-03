@@ -9,5 +9,5 @@ type PostUsecase interface {
 	ReadAll() (*[]models.Post, error)
 	ReadById(id int) (*models.Post, error)
 	Update(id int, post *models.Post) (*models.Post, error)
-	Delete(id int) error
+	Delete(id int) (map[string]interface{}, error)
 }
