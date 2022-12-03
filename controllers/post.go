@@ -115,6 +115,8 @@ func CreatePost() http.Handler {
 func UpdatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		redisClient := configs.GetRedis()
+
 		defer cancel()
 
 		rw.Header().Add("Content-Type", "application/json")
@@ -139,17 +141,41 @@ func UpdatePost() http.Handler {
 			}
 		}
 
-		result, err := post.Update()
+		_, oldPostErr := models.GetPost(uint(postId))
 
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return utils.NewHTTPError(err, 404, "record not found")
+		if oldPostErr != nil {
+			if errors.Is(oldPostErr, gorm.ErrRecordNotFound) {
+				return utils.NewHTTPError(oldPostErr, 404, "record not found")
 			} else {
-				return err
+				return oldPostErr
 			}
 		}
 
-		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: result}
+		_, updatePostErr := post.Update()
+
+		if updatePostErr != nil {
+			return updatePostErr
+		}
+
+		updatedPost, err := models.GetPost(uint(postId))
+
+		if err != nil {
+			return err
+		}
+
+		postJSON, err := json.Marshal(updatedPost)
+		if err != nil {
+			return err
+		}
+
+		// Save JSON blob to Redis
+		reply, err := redisClient.Do("SET", "post:"+strconv.Itoa(updatedPost.ID), postJSON)
+
+		if reply != "OK" {
+			return utils.NewHTTPError(err, 500, "Failed saving data to redis")
+		}
+
+		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: updatedPost}
 		rw.WriteHeader(response.Status)
 		json.NewEncoder(rw).Encode(response)
 		return nil
