@@ -2,7 +2,6 @@ package models
 
 import (
 	"dot-crud-redis-go-api/configs"
-	"dot-crud-redis-go-api/responses"
 	"fmt"
 	"time"
 )
@@ -55,27 +54,19 @@ func GetPost(id uint) (*Post, error) {
 	return post, nil
 }
 
-func (post *Post) Create() (*responses.CreatePostResponse, error) {
+func (post *Post) Create() (*Post, error) {
 	DB := configs.GetDB()
 
 	result := DB.Model(&Post{}).Create(post)
 
 	if result.Error != nil {
-		return &responses.CreatePostResponse{}, fmt.Errorf("DB error : %v", result.Error)
+		return &Post{}, fmt.Errorf("DB error : %v", result.Error)
 	}
 
-	createPostResponse := &responses.CreatePostResponse{
-		ID:          post.ID,
-		Title:       post.Title,
-		Description: post.Description,
-		UpdatedAt:   post.UpdatedAt,
-		CreatedAt:   post.CreatedAt,
-	}
-
-	return createPostResponse, nil
+	return post, nil
 }
 
-func (post *Post) Update() (interface{}, error) {
+func (post *Post) Update() (*Post, error) {
 	DB := configs.GetDB()
 
 	updatedPost := &Post{}
@@ -85,22 +76,15 @@ func (post *Post) Update() (interface{}, error) {
 		return nil, fmt.Errorf("DB error : %v", result.Error)
 	}
 
-	udpatePostResponse := &responses.UpdatePostResponse{
-		ID:          post.ID,
-		Title:       updatedPost.Title,
-		Description: updatedPost.Description,
-		UpdatedAt:   updatedPost.UpdatedAt,
-	}
-
-	return udpatePostResponse, nil
+	return updatedPost, nil
 }
 
-func Delete(postId int) (interface{}, error) {
+func Delete(postId int) (map[string]interface{}, error) {
 	DB := configs.GetDB()
 
 	result := DB.Delete(&Post{}, postId)
 
-	return &responses.DeletePostRespones{
-		RowsAffected: result.RowsAffected,
+	return map[string]interface{}{
+		"rows_affected": result.RowsAffected,
 	}, nil
 }
