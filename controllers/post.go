@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"dot-crud-redis-go-api/configs"
 	"dot-crud-redis-go-api/models"
 	"dot-crud-redis-go-api/responses"
 	"dot-crud-redis-go-api/usecases"
@@ -48,7 +47,6 @@ func (e *PostController) GetPosts() http.Handler {
 func (e *PostController) GetPost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		redisClient := configs.GetRedis()
 
 		defer cancel()
 
@@ -71,29 +69,6 @@ func (e *PostController) GetPost() http.Handler {
 			}
 		}
 
-		// Get JSON blob from Redis
-		redisResult, err := redisClient.Do("GET", "post:"+strconv.Itoa(post.ID))
-
-		if err != nil {
-			return utils.NewHTTPError(err, 500, "Failed getting data from redis")
-		}
-
-		if redisResult == nil {
-			postJSON, err := json.Marshal(post)
-			if err != nil {
-				return err
-			}
-
-			// Save JSON blob to Redis
-			_, saveRedisError := redisClient.Do("SET", "post:"+strconv.Itoa(post.ID), postJSON)
-
-			if saveRedisError != nil {
-				return utils.NewHTTPError(saveRedisError, 500, "Failed saving data to redis")
-			}
-		} else {
-			json.Unmarshal(redisResult.([]byte), &post)
-		}
-
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
 		rw.WriteHeader(response.Status)
 		json.NewEncoder(rw).Encode(response)
@@ -104,7 +79,6 @@ func (e *PostController) GetPost() http.Handler {
 func (e *PostController) CreatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		redisClient := configs.GetRedis()
 
 		defer cancel()
 
@@ -127,18 +101,6 @@ func (e *PostController) CreatePost() http.Handler {
 			return err
 		}
 
-		postJSON, err := json.Marshal(result)
-		if err != nil {
-			return err
-		}
-
-		// Save JSON blob to Redis
-		reply, err := redisClient.Do("SET", "post:"+strconv.Itoa(result.ID), postJSON)
-
-		if reply != "OK" {
-			return utils.NewHTTPError(nil, 500, "Failed saving data to redis")
-		}
-
 		response := responses.FineResponse{Status: http.StatusCreated, Message: "success", Data: result}
 		rw.WriteHeader(response.Status)
 		json.NewEncoder(rw).Encode(response)
@@ -149,7 +111,6 @@ func (e *PostController) CreatePost() http.Handler {
 func (e *PostController) UpdatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		redisClient := configs.GetRedis()
 
 		defer cancel()
 
@@ -197,13 +158,6 @@ func (e *PostController) UpdatePost() http.Handler {
 			return err
 		}
 
-		// Delete JSON blob from Redis
-		_, redisDeleteErr := redisClient.Do("DEL", "post:"+strconv.Itoa(updatedPost.ID))
-
-		if redisDeleteErr != nil {
-			return utils.NewHTTPError(err, 500, "Failed deleting data from redis")
-		}
-
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: updatedPost}
 		rw.WriteHeader(response.Status)
 		json.NewEncoder(rw).Encode(response)
@@ -214,7 +168,6 @@ func (e *PostController) UpdatePost() http.Handler {
 func (e *PostController) DeletePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		redisClient := configs.GetRedis()
 		defer cancel()
 
 		params := mux.Vars(r)
@@ -240,13 +193,6 @@ func (e *PostController) DeletePost() http.Handler {
 
 		if err != nil {
 			return err
-		}
-
-		// Delete JSON blob from Redis
-		_, redisDeleteErr := redisClient.Do("DEL", "post:"+strconv.Itoa(id))
-
-		if redisDeleteErr != nil {
-			return utils.NewHTTPError(err, 500, "Failed deleting data from redis")
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: post}
