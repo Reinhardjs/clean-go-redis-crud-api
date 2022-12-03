@@ -30,6 +30,6 @@ func (e *PostUsecaseImpl) Update(id int, post *models.Post) (*models.Post, error
 	return e.postRepo.Update(id, post)
 }
 
-func (e *PostUsecaseImpl) Delete(id int) error {
+func (e *PostUsecaseImpl) Delete(id int) (map[string]interface{}, error) {
 	return e.postRepo.Delete(id)
 }
