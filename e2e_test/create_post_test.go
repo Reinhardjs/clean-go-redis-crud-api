@@ -14,10 +14,11 @@ type CreatePostSuite struct {
 	suite.Suite
 }
 
-func TestCratePostPostSuite(t *testing.T) {
+func TestCreatePostPostSuite(t *testing.T) {
 	suite.Run(t, new(CreatePostSuite))
 }
 
+// This will always failed, because cannot predict the timestamps
 func (s *CreatePostSuite) TestCreatePost() {
 
 	values := map[string]string{"title": "This is title", "description": "This is description"}
