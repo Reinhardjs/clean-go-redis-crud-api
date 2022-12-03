@@ -87,12 +87,14 @@ func (e *PostRepoImpl) Update(id int, post *models.Post) (*models.Post, error) {
 	}
 
 	// Delete JSON blob from Redis
-	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:"+strconv.Itoa(id))
+	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:65")
 
 	if redisDeleteErr != nil {
 		// Failed deleting data from redis
 		return nil, redisDeleteErr
 	}
+
+	updatedPost.ID = id
 
 	return updatedPost, nil
 }

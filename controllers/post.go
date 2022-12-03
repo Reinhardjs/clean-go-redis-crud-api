@@ -136,7 +136,7 @@ func (e *PostController) UpdatePost() http.Handler {
 			}
 		}
 
-		_, oldPostErr := e.postUsecase.ReadById(int(postId))
+		oldPost, oldPostErr := e.postUsecase.ReadById(int(postId))
 
 		if oldPostErr != nil {
 			if errors.Is(oldPostErr, gorm.ErrRecordNotFound) {
@@ -146,13 +146,12 @@ func (e *PostController) UpdatePost() http.Handler {
 			}
 		}
 
-		_, updatePostErr := e.postUsecase.Update(post.ID, post)
+		updatedPost, updatePostErr := e.postUsecase.Update(post.ID, post)
+		updatedPost.CreatedAt = oldPost.CreatedAt
 
 		if updatePostErr != nil {
 			return updatePostErr
 		}
-
-		updatedPost, err := e.postUsecase.ReadById(int(postId))
 
 		if err != nil {
 			return err
