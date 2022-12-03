@@ -13,6 +13,19 @@ type Post struct {
 	Description string `json:"description"`
 }
 
+func (post *Post) Validate() (string, bool) {
+
+	if post.Title == "" {
+		return "Title should be on the payload", false
+	}
+
+	if post.Description == "" {
+		return "Description should be on the payload", false
+	}
+
+	return "Payload is valid", true
+}
+
 func GetPosts() ([]*Post, error) {
 	DB := configs.GetDB()
 
@@ -36,4 +49,16 @@ func GetPost(id uint) (*Post, error) {
 	}
 
 	return post, nil
+}
+
+func (post *Post) Create() (interface{}, error) {
+	DB := configs.GetDB()
+
+	result := DB.Create(post)
+
+	if result.Error != nil {
+		return nil, fmt.Errorf("DB error : %v", result.Error)
+	}
+
+	return result.Value, nil
 }
