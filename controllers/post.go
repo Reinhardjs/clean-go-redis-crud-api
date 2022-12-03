@@ -5,6 +5,7 @@ import (
 	"dot-crud-redis-go-api/configs"
 	"dot-crud-redis-go-api/models"
 	"dot-crud-redis-go-api/responses"
+	"dot-crud-redis-go-api/usecases"
 	"dot-crud-redis-go-api/utils"
 	"encoding/json"
 	"errors"
@@ -16,14 +17,22 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func GetPosts() http.Handler {
+type PostController struct {
+	postUsecase usecases.PostUsecase
+}
+
+func CreatePostController(postUsecase usecases.PostUsecase) PostController {
+	return PostController{postUsecase}
+}
+
+func (e *PostController) GetPosts() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		rw.Header().Add("Content-Type", "application/json")
 
-		posts, err := models.GetPosts()
+		posts, err := e.postUsecase.ReadAll()
 
 		if err != nil {
 			return err
@@ -36,7 +45,7 @@ func GetPosts() http.Handler {
 	})
 }
 
-func GetPost() http.Handler {
+func (e *PostController) GetPost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		redisClient := configs.GetRedis()
@@ -52,7 +61,7 @@ func GetPost() http.Handler {
 
 		rw.Header().Add("Content-Type", "application/json")
 
-		post, err := models.GetPost(uint(id))
+		post, err := e.postUsecase.ReadById(int(id))
 
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -92,7 +101,7 @@ func GetPost() http.Handler {
 	})
 }
 
-func CreatePost() http.Handler {
+func (e *PostController) CreatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		redisClient := configs.GetRedis()
@@ -137,7 +146,7 @@ func CreatePost() http.Handler {
 	})
 }
 
-func UpdatePost() http.Handler {
+func (e *PostController) UpdatePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		redisClient := configs.GetRedis()
@@ -166,7 +175,7 @@ func UpdatePost() http.Handler {
 			}
 		}
 
-		_, oldPostErr := models.GetPost(uint(postId))
+		_, oldPostErr := e.postUsecase.ReadById(int(postId))
 
 		if oldPostErr != nil {
 			if errors.Is(oldPostErr, gorm.ErrRecordNotFound) {
@@ -182,7 +191,7 @@ func UpdatePost() http.Handler {
 			return updatePostErr
 		}
 
-		updatedPost, err := models.GetPost(uint(postId))
+		updatedPost, err := e.postUsecase.ReadById(int(postId))
 
 		if err != nil {
 			return err
@@ -202,7 +211,7 @@ func UpdatePost() http.Handler {
 	})
 }
 
-func DeletePost() http.Handler {
+func (e *PostController) DeletePost() http.Handler {
 	return RootHandler(func(rw http.ResponseWriter, r *http.Request) (err error) {
 		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		redisClient := configs.GetRedis()
@@ -218,7 +227,7 @@ func DeletePost() http.Handler {
 		rw.Header().Add("Content-Type", "application/json")
 
 		// Check for existing record
-		_, existingPostErr := models.GetPost(uint(id))
+		_, existingPostErr := e.postUsecase.ReadById(int(id))
 		if existingPostErr != nil {
 			if errors.Is(existingPostErr, gorm.ErrRecordNotFound) {
 				return utils.NewHTTPError(existingPostErr, 404, "record not found")
@@ -227,7 +236,7 @@ func DeletePost() http.Handler {
 			}
 		}
 
-		post, err := models.Delete(id)
+		post, err := e.postUsecase.Delete(id)
 
 		if err != nil {
 			return err
