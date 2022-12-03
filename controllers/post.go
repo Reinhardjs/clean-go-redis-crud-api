@@ -121,7 +121,7 @@ func (e *PostController) CreatePost() http.Handler {
 			return utils.NewHTTPError(nil, 400, message)
 		}
 
-		result, err := post.Create()
+		result, err := e.postUsecase.Create(post)
 
 		if err != nil {
 			return err
@@ -185,7 +185,7 @@ func (e *PostController) UpdatePost() http.Handler {
 			}
 		}
 
-		_, updatePostErr := post.Update()
+		_, updatePostErr := e.postUsecase.Update(post.ID, post)
 
 		if updatePostErr != nil {
 			return updatePostErr
