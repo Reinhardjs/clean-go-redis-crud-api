@@ -2,6 +2,7 @@ package models
 
 import (
 	"dot-crud-redis-go-api/configs"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
@@ -19,7 +20,7 @@ func GetPosts() ([]*Post, error) {
 	posts := make([]*Post, 0)
 	err := DB.Table("posts").Find(&posts).Error
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("DB error : %v", err)
 	}
 
 	return posts, nil
