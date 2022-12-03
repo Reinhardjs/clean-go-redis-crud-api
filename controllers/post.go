@@ -47,7 +47,7 @@ func GetPost() http.Handler {
 		id, err := strconv.Atoi(params["id"])
 
 		if err != nil {
-			return err
+			return utils.NewHTTPError(err, 400, "Invalid post id")
 		}
 
 		rw.Header().Add("Content-Type", "application/json")
@@ -212,7 +212,7 @@ func DeletePost() http.Handler {
 		id, err := strconv.Atoi(params["postId"])
 
 		if err != nil {
-			return err
+			return utils.NewHTTPError(err, 400, "Invalid post id")
 		}
 
 		rw.Header().Add("Content-Type", "application/json")
