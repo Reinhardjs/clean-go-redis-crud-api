@@ -73,7 +73,6 @@ func CreatePost() http.Handler {
 		redisClient := configs.GetRedis()
 
 		defer cancel()
-		defer redisClient.Close()
 
 		rw.Header().Add("Content-Type", "application/json")
 
