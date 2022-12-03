@@ -1,5 +1,24 @@
 ![image](https://user-images.githubusercontent.com/7758970/205461470-544322a0-3577-4bf8-980b-39b45762fd5e.png)
 
+
+## Architecture
+
+In this project, I implemented clean architecture, that the main structure consist of model, repository, usecase, and controller
+
+I'm using this architecture because it provide us to be more convenience to implement Open/Close Principle, Single Responsibility Principle, and also Unit Test.
+
+<br> 
+
+
+## Installation
+`go get -d -v ./...`
+
+`go mod download`
+
+`go run main.go`
+
+<br>
+
 ## Endpoints
 
 API Endpoint Host : http://103.134.154.18:30033/
