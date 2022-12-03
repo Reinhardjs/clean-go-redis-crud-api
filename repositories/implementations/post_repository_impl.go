@@ -79,14 +79,14 @@ func (e *PostRepoImpl) ReadById(id int) (*models.Post, error) {
 
 func (e *PostRepoImpl) Update(id int, post *models.Post) (*models.Post, error) {
 	updatedPost := &models.Post{}
-	result := e.DB.Model(updatedPost).Where("id = ?", post.ID).Updates(models.Post{Title: post.Title, Description: post.Description})
+	result := e.DB.Model(updatedPost).Where("id = ?", id).Updates(models.Post{Title: post.Title, Description: post.Description})
 
 	if result.Error != nil {
 		return nil, fmt.Errorf("DB error : %v", result.Error)
 	}
 
 	// Delete JSON blob from Redis
-	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:"+strconv.Itoa(updatedPost.ID))
+	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:"+strconv.Itoa(id))
 
 	if redisDeleteErr != nil {
 		// Failed deleting data from redis
