@@ -163,16 +163,11 @@ func UpdatePost() http.Handler {
 			return err
 		}
 
-		postJSON, err := json.Marshal(updatedPost)
-		if err != nil {
-			return err
-		}
+		// Delete JSON blob from Redis
+		_, redisDeleteErr := redisClient.Do("DEL", "post:"+strconv.Itoa(updatedPost.ID))
 
-		// Save JSON blob to Redis
-		reply, err := redisClient.Do("SET", "post:"+strconv.Itoa(updatedPost.ID), postJSON)
-
-		if reply != "OK" {
-			return utils.NewHTTPError(err, 500, "Failed saving data to redis")
+		if redisDeleteErr != nil {
+			return utils.NewHTTPError(err, 500, "Failed deleting data from redis")
 		}
 
 		response := responses.FineResponse{Status: http.StatusOK, Message: "success", Data: updatedPost}
