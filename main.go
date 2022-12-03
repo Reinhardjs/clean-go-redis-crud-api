@@ -16,8 +16,9 @@ func main() {
 
 	router := mux.NewRouter()
 	DB := configs.GetDB()
+	RedisClient := configs.GetRedis()
 
-	postRepository := repositories.CreatePostRepo(DB)
+	postRepository := repositories.CreatePostRepo(DB, RedisClient)
 	postUsecase := usecases.CreatePostUsecase(postRepository)
 	postController := controllers.CreatePostController(postUsecase)
 
