@@ -20,20 +20,18 @@ func init() {
 		fmt.Print(e)
 	}
 
+	// Init PostgreDB connection
 	username := os.Getenv("db_user")
 	password := os.Getenv("db_pass")
 	dbName := os.Getenv("db_name")
 	dbHost := os.Getenv("db_host")
 	sslMode := os.Getenv("sslmode")
-
 	dbUri := fmt.Sprintf("host=%s user=%s dbname=%s sslmode=%s password=%s", dbHost, username, dbName, sslMode, password)
-	fmt.Println(dbUri)
-
 	conn, err := gorm.Open("postgres", dbUri)
 	if err != nil {
 		fmt.Print(err)
 	}
-
+	fmt.Println(dbUri)
 	db = conn
 
 	// Init redis connection
