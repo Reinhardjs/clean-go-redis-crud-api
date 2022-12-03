@@ -16,7 +16,7 @@ func TestGetAllPostSuite(t *testing.T) {
 	suite.Run(t, new(GetAllPostSuite))
 }
 
-func (s *GetSinglePostSuite) TestGetAllPostThatDoesExist() {
+func (s *GetAllPostSuite) TestGetAllPostThatDoesExist() {
 	c := http.Client{}
 
 	r, _ := c.Get("http://localhost:8080/posts")
