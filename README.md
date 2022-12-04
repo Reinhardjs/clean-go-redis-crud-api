@@ -9,6 +9,16 @@ I'm using this architecture because it provide us to be more convenience to impl
 
 <br> 
 
+#### Built With
+
+* Go (Mux)
+* Gorm
+* Redis
+* PostgreDB
+* Docker
+* Kubernetes
+
+<br>
 
 ## Installation
 `go get -d -v ./...`
