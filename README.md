@@ -85,6 +85,7 @@ Example Response Payload:
 
 ### Update post
 `PUT` http://103.134.154.18:30033/posts/{post-id}
+
 `PATCH` http://103.134.154.18:30033/posts/{post-id}
 
 Example Request Payload:
@@ -118,4 +119,5 @@ Example Response Payload:
 <br>
 
 Demo and explanation on youtube (bahasa) :
+
 https://youtu.be/p-QQj4LtuD8
