@@ -27,14 +27,48 @@ func (e *PostRepoImpl) Create(post *models.Post) (*models.Post, error) {
 		return &models.Post{}, fmt.Errorf("DB error : %v", result.Error)
 	}
 
+	_, redisDeleteAllErr := e.RedisClient.Do("DEL", "post:all")
+
+	if redisDeleteAllErr != nil {
+		// Failed deleting data (post:all) from redis
+		return nil, redisDeleteAllErr
+	}
+
 	return post, nil
 }
 
 func (e *PostRepoImpl) ReadAll() (*[]models.Post, error) {
 	posts := make([]models.Post, 0)
-	err := e.DB.Table("posts").Find(&posts).Error
+
+	// Get JSON blob from Redis
+	redisResult, err := e.RedisClient.Do("GET", "post:all")
+
 	if err != nil {
-		return nil, fmt.Errorf("DB error : %v", err)
+		// Failed getting data from redis
+		return nil, err
+	}
+
+	if redisResult == nil {
+
+		err := e.DB.Table("posts").Find(&posts).Error
+		if err != nil {
+			return nil, fmt.Errorf("DB error : %v", err)
+		}
+
+		postJSON, err := json.Marshal(posts)
+		if err != nil {
+			return nil, err
+		}
+
+		// Save JSON blob to Redis
+		_, saveRedisError := e.RedisClient.Do("SET", "post:all", postJSON)
+
+		if saveRedisError != nil {
+			// Failed saving data to redis
+			return nil, saveRedisError
+		}
+	} else {
+		json.Unmarshal(redisResult.([]byte), &posts)
 	}
 
 	return &posts, nil
@@ -88,10 +122,16 @@ func (e *PostRepoImpl) Update(id int, post *models.Post) (*models.Post, error) {
 
 	// Delete JSON blob from Redis
 	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:"+strconv.Itoa(id))
+	_, redisDeleteAllErr := e.RedisClient.Do("DEL", "post:all")
 
 	if redisDeleteErr != nil {
 		// Failed deleting data from redis
 		return nil, redisDeleteErr
+	}
+
+	if redisDeleteAllErr != nil {
+		// Failed deleting data (post:all) from redis
+		return nil, redisDeleteAllErr
 	}
 
 	updatedPost.ID = id
@@ -104,10 +144,16 @@ func (e *PostRepoImpl) Delete(id int) (map[string]interface{}, error) {
 
 	// Delete JSON blob from Redis
 	_, redisDeleteErr := e.RedisClient.Do("DEL", "post:"+strconv.Itoa(id))
+	_, redisDeleteAllErr := e.RedisClient.Do("DEL", "post:all")
 
 	if redisDeleteErr != nil {
 		// Failed deleting data from redis
 		return nil, redisDeleteErr
+	}
+
+	if redisDeleteAllErr != nil {
+		// Failed deleting data (post:all) from redis
+		return nil, redisDeleteAllErr
 	}
 
 	return map[string]interface{}{
