@@ -121,3 +121,7 @@ Example Response Payload:
 Demo and explanation on youtube (bahasa) :
 
 https://youtu.be/p-QQj4LtuD8
+
+Updates of redis implementation, addition / completion of the above video explanation
+
+https://youtu.be/NlHjW6ELu1U
